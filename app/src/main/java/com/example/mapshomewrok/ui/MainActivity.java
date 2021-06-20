@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity
 
     private static final int LOCATION = 0;
     private List<LatLng> places = new ArrayList<>();
-    private List<Figure> figure = new ArrayList<>();
+    private List<Figure> figureArrayList = new ArrayList<>();
     private GoogleMap map;
 
     @Override
@@ -64,6 +64,14 @@ public class MainActivity extends AppCompatActivity
                 map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
             }
         });
+
+        findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                App.database.figureDao().deleteAll(figureArrayList);
+                map.clear();
+            }
+        });
         findViewById(R.id.polygon_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -74,10 +82,10 @@ public class MainActivity extends AppCompatActivity
                      places) {
                     polygonOptions.add(latLng);
                     Figure figure1 = new Figure(latLng.latitude,latLng.longitude);
-                    figure.add(figure1);
+                    figureArrayList.add(figure1);
                 }
                 map.addPolygon(polygonOptions);
-                App.database.figureDao().putFigure(figure);
+                App.database.figureDao().putFigure(figureArrayList);
             }
         });
     }
@@ -91,18 +99,14 @@ public class MainActivity extends AppCompatActivity
                 .target(new LatLng(42.8731844, 74.5834363))
                 .zoom(19.75f).build();
         map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-        figure = App.database.figureDao().getFigure();
-        if (figure.size() > 0){
-            for (int i = 0; i < figure.size() ; i++) {
-                LatLng lng = new LatLng(figure.get(i).getLatitude(),figure.get(i).getLatlng());
-                places.add(lng);
-            }
+        figureArrayList = App.database.figureDao().getFigure();
+        if (figureArrayList.size() > 0){
             PolygonOptions polygonOptions = new PolygonOptions();
             polygonOptions.strokeWidth(5f);
             polygonOptions.strokeColor(Color.GRAY);
-            for (LatLng latLng:
-                    places) {
-                polygonOptions.add(latLng);
+            for (int i = 0; i < figureArrayList.size() ; i++) {
+                LatLng lng = new LatLng(figureArrayList.get(i).getLatitude(), figureArrayList.get(i).getLatlng());
+                polygonOptions.add(lng);
             }
             map.addPolygon(polygonOptions);
         }
